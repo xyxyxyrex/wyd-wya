@@ -11,6 +11,7 @@
   z-index: 1;
   position: relative;
   pointer-events: auto;
+  background: #1a1a2e;
 }
 
 /* Hide Leaflet attribution */
@@ -219,7 +220,7 @@
 }
 
 .leaflet-popup-content {
-  margin: 10px 14px;
+  margin: 0;
   color: var(--text-primary);
 }
 
@@ -228,6 +229,102 @@
   border: 1px solid var(--border-color);
   border-top: none;
   border-left: none;
+}
+
+/* Custom note popup styles */
+.note-popup-container .leaflet-popup-content-wrapper {
+  background: var(--glass-bg, rgba(250, 248, 245, 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.note-popup-container .leaflet-popup-content-wrapper:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.note-popup-container .leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+}
+
+.note-popup-container .leaflet-popup-tip-container {
+  margin-top: -1px;
+}
+
+.note-popup-container .leaflet-popup-tip {
+  background: var(--glass-bg, rgba(250, 248, 245, 0.95));
+  box-shadow: none;
+}
+
+.note-popup {
+  padding: 0.875rem 1rem;
+  min-width: 180px;
+}
+
+.note-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.note-popup-type {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.note-popup-author {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.note-popup-content {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.note-popup-content.audio-hint {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.note-popup-thread-count,
+.note-popup-poll-info {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Dark mode popup */
+[data-theme="dark"] .note-popup-container .leaflet-popup-content-wrapper {
+  background: var(--glass-bg, rgba(17, 17, 17, 0.95));
+}
+
+[data-theme="dark"] .note-popup-container .leaflet-popup-tip {
+  background: var(--glass-bg, rgba(17, 17, 17, 0.95));
 }
 
 .leaflet-container {

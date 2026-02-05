@@ -1,21 +1,49 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "../utils/dateUtils";
+import { fullSpamCheck, recordSuccessfulPost } from "../utils/spamProtection";
 import "./CommentSection.css";
+
+// Simple user ID based on session (or could use device fingerprint)
+const getUserId = () => {
+  let userId = sessionStorage.getItem("userId");
+  if (!userId) {
+    userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem("userId", userId);
+  }
+  return userId;
+};
 
 const CommentSection = ({ comments, onAddComment }) => {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || isSubmitting) return;
 
+    const userId = getUserId();
+    const content = newComment.trim();
+
+    // Spam check
+    const spamCheck = fullSpamCheck(userId, content, "COMMENT");
+    if (!spamCheck.allowed) {
+      setError(spamCheck.reason);
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     setIsSubmitting(true);
+    setError(null);
+
     try {
-      await onAddComment(newComment.trim());
+      await onAddComment(content);
+      recordSuccessfulPost(userId, content, "COMMENT");
       setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
+      setError("Failed to post comment");
+      setTimeout(() => setError(null), 3000);
     }
     setIsSubmitting(false);
   };
@@ -29,7 +57,7 @@ const CommentSection = ({ comments, onAddComment }) => {
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Add a comment..."
           maxLength={200}
-          className="comment-input"
+          className={`comment-input ${error ? "input-error" : ""}`}
         />
         <button
           type="submit"
@@ -39,6 +67,8 @@ const CommentSection = ({ comments, onAddComment }) => {
           {isSubmitting ? "..." : "Post"}
         </button>
       </form>
+
+      {error && <div className="comment-error">{error}</div>}
 
       <div className="comments-list">
         {comments.length === 0 ? (

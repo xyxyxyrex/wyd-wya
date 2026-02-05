@@ -136,11 +136,16 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
       const map = L.map(mapContainerRef.current, {
         attributionControl: false,
         zoomControl: false,
+        minZoom: 5,
+        maxZoom: 18,
       }).setView(center, 13);
 
+      // CartoDB Positron - clean, minimal light theme (original)
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        { attribution: "" },
+        {
+          attribution: "",
+        },
       ).addTo(map);
 
       // Ensure map size is correct after initialization
@@ -234,7 +239,70 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
           zIndexOffset: 500,
         }).addTo(map);
 
-        marker.on("click", () => onNoteSelect(note));
+        // Create popup content based on note type
+        let popupContent = "";
+        const noteContent = Array.isArray(note.content)
+          ? note.content[0]
+          : note.content;
+        const truncatedContent =
+          noteContent && noteContent.length > 120
+            ? noteContent.substring(0, 120) + "..."
+            : noteContent;
+
+        if (note.type === "text") {
+          popupContent = `
+            <div class="note-popup">
+              <div class="note-popup-header">
+                <span class="note-popup-type">${note.isThreaded ? "THREAD" : "TEXT"}</span>
+                <span class="note-popup-author">${note.author}</span>
+              </div>
+              <p class="note-popup-content">${truncatedContent || ""}</p>
+              ${note.isThreaded && Array.isArray(note.content) && note.content.length > 1 ? `<span class="note-popup-thread-count">${note.content.length} posts in thread</span>` : ""}
+            </div>
+          `;
+        } else if (note.type === "poll") {
+          popupContent = `
+            <div class="note-popup">
+              <div class="note-popup-header">
+                <span class="note-popup-type">POLL</span>
+                <span class="note-popup-author">${note.author}</span>
+              </div>
+              <p class="note-popup-content">${note.question}</p>
+              <span class="note-popup-poll-info">${note.options?.length || 0} options</span>
+            </div>
+          `;
+        } else if (note.type === "audio") {
+          popupContent = `
+            <div class="note-popup">
+              <div class="note-popup-header">
+                <span class="note-popup-type">AUDIO</span>
+                <span class="note-popup-author">${note.author}</span>
+              </div>
+              ${note.caption ? `<p class="note-popup-content">${note.caption}</p>` : '<p class="note-popup-content audio-hint">🎵 Audio clip</p>'}
+            </div>
+          `;
+        }
+
+        // Bind popup to marker
+        marker.bindPopup(popupContent, {
+          className: "note-popup-container",
+          closeButton: false,
+          offset: [0, -10],
+          maxWidth: 280,
+          minWidth: 200,
+        });
+
+        // Open modal on popup click for full view
+        marker.on("popupopen", () => {
+          const popupEl = marker.getPopup().getElement();
+          if (popupEl) {
+            popupEl.addEventListener("click", () => {
+              marker.closePopup();
+              onNoteSelect(note);
+            });
+          }
+        });
+
         markersRef.current.push(marker);
       } else {
         // Multiple notes - show cluster marker with count above and dotted inner border

@@ -1,5 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "../utils/dateUtils";
+import {
+  extractDominantColor,
+  createGradientFromColor,
+  getContrastTextColor,
+} from "../utils/colorExtractor";
 import CommentSection from "./CommentSection";
 import "./NoteCard.css";
 
@@ -26,12 +31,41 @@ const NoteCard = ({
   showComments: initialShowComments = false,
 }) => {
   const [showComments, setShowComments] = useState(initialShowComments);
-  const [votedOption, setVotedOption] = useState(null);
+  const [votedOption, setVotedOption] = useState(() => {
+    // Check if user already voted on this poll
+    if (note.type === "poll") {
+      const voterId = localStorage.getItem("san-ka-voter-id");
+      if (voterId && note.options) {
+        const votedIndex = note.options.findIndex((opt) =>
+          opt.voters?.includes(voterId),
+        );
+        return votedIndex >= 0 ? votedIndex : null;
+      }
+    }
+    return null;
+  });
   const [currentThreadIndex, setCurrentThreadIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [expirationProgress, setExpirationProgress] = useState(1);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [dominantColor, setDominantColor] = useState(null);
+  const [textColor, setTextColor] = useState(null);
+  const musicAudioRef = useRef(null);
 
   const TEXT_LIMIT = 150;
+
+  // Extract dominant color from album art
+  useEffect(() => {
+    if (note.music?.albumArt) {
+      extractDominantColor(note.music.albumArt).then((color) => {
+        setDominantColor(color);
+        setTextColor(getContrastTextColor(color));
+      });
+    } else {
+      setDominantColor(null);
+      setTextColor(null);
+    }
+  }, [note.music?.albumArt]);
 
   // Update expiration progress every minute
   useEffect(() => {
@@ -46,6 +80,19 @@ const NoteCard = ({
     const interval = setInterval(updateProgress, 60000); // Update every minute
     return () => clearInterval(interval);
   }, [note.createdAt, note.expiresAt]);
+
+  // Update votedOption when note data changes (real-time updates)
+  useEffect(() => {
+    if (note.type === "poll" && note.options) {
+      const voterId = localStorage.getItem("san-ka-voter-id");
+      if (voterId) {
+        const votedIndex = note.options.findIndex((opt) =>
+          opt.voters?.includes(voterId),
+        );
+        setVotedOption(votedIndex >= 0 ? votedIndex : null);
+      }
+    }
+  }, [note.type, note.options]);
 
   useEffect(() => {
     setShowComments(initialShowComments);
@@ -91,6 +138,70 @@ const NoteCard = ({
     setCurrentThreadIndex((prev) => (prev < totalThreads - 1 ? prev + 1 : 0));
   };
 
+  const toggleMusicPreview = (e) => {
+    e.stopPropagation();
+    if (musicAudioRef.current) {
+      if (isPlayingMusic) {
+        musicAudioRef.current.pause();
+        setIsPlayingMusic(false);
+      } else {
+        musicAudioRef.current.play();
+        setIsPlayingMusic(true);
+      }
+    }
+  };
+
+  // Determine text size class based on content length
+  const getTextSizeClass = (text) => {
+    const len = text.length;
+    if (len <= 30) return "text-xl";
+    if (len <= 60) return "text-lg";
+    if (len <= 120) return "text-md";
+    return "text-sm";
+  };
+
+  const renderMusicSection = () => {
+    if (!note.music) return null;
+
+    return (
+      <>
+        <div className="music-divider" />
+        <div
+          className="music-section"
+          style={{
+            backgroundImage: `url(${note.music.albumArt})`,
+          }}
+        >
+          <div className="music-section-overlay" />
+          <audio
+            ref={musicAudioRef}
+            src={note.music.previewUrl}
+            onEnded={() => setIsPlayingMusic(false)}
+          />
+          <div className="music-section-content">
+            <img
+              src={note.music.albumArt}
+              alt={note.music.album}
+              className="music-section-art"
+            />
+            <div className="music-section-info">
+              <span className="music-section-title">{note.music.title}</span>
+              <span className="music-section-artist">{note.music.artist}</span>
+            </div>
+            {note.music.previewUrl && (
+              <button
+                className={`music-section-play ${isPlayingMusic ? "playing" : ""}`}
+                onClick={toggleMusicPreview}
+              >
+                {isPlayingMusic ? "■" : "▶"}
+              </button>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  };
+
   const renderContent = () => {
     switch (note.type) {
       case "text": {
@@ -103,10 +214,24 @@ const NoteCard = ({
 
         // For threaded posts, use a different layout
         if (hasMultipleThreads) {
+          const textSizeClass = getTextSizeClass(currentText);
           return (
             <div className="text-content-wrapper has-threads">
-              <div className="thread-text-card">
-                <p className="note-text">{currentText}</p>
+              <div
+                className="text-bubble"
+                style={
+                  dominantColor && note.music
+                    ? {
+                        background: createGradientFromColor(
+                          dominantColor,
+                          0.92,
+                        ),
+                        color: textColor,
+                      }
+                    : undefined
+                }
+              >
+                <p className={`note-text ${textSizeClass}`}>{currentText}</p>
               </div>
               <div className="thread-nav-row">
                 <button className="thread-nav prev" onClick={goToPrevThread}>
@@ -147,10 +272,21 @@ const NoteCard = ({
         }
 
         // Regular single text post
+        const textSizeClass = getTextSizeClass(displayText);
         return (
           <div className="text-content-wrapper">
-            <div className="text-content">
-              <p className="note-text">
+            <div
+              className="text-bubble"
+              style={
+                dominantColor && note.music
+                  ? {
+                      background: createGradientFromColor(dominantColor, 0.92),
+                      color: textColor,
+                    }
+                  : undefined
+              }
+            >
+              <p className={`note-text ${textSizeClass}`}>
                 {displayText}
                 {shouldTruncate && (
                   <button
@@ -248,7 +384,9 @@ const NoteCard = ({
   };
 
   return (
-    <div className={`note-card note-${note.type}`}>
+    <div
+      className={`note-card note-${note.type} ${note.music ? "has-music" : ""}`}
+    >
       {/* Expiration Progress Bar */}
       <div className="expiration-bar-container">
         <div
@@ -269,6 +407,9 @@ const NoteCard = ({
       </div>
 
       <div className="note-body">{renderContent()}</div>
+
+      {/* Music Section with Album Background */}
+      {renderMusicSection()}
 
       <div className="note-footer">
         <button

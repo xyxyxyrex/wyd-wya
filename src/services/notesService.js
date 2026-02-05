@@ -53,12 +53,13 @@ export const subscribeToNotes = (callback) => {
   );
 };
 
-// Create text note (supports threaded posts)
+// Create text note (supports threaded posts and music attachments)
 export const createTextNote = async (
   content,
   author = "Anonymous",
   location = null,
   isThreaded = false,
+  music = null,
 ) => {
   const now = Timestamp.now();
   const noteData = {
@@ -72,6 +73,11 @@ export const createTextNote = async (
     createdAt: now,
     expiresAt: Timestamp.fromMillis(now.toMillis() + EXPIRATION_MS),
   };
+
+  // Add music attachment if provided
+  if (music) {
+    noteData.music = music;
+  }
 
   const docRef = await addDoc(collection(db, NOTES_COLLECTION), noteData);
   return { id: docRef.id, ...noteData };

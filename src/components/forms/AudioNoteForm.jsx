@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useAudioRecorder } from "../../hooks/useAudioRecorder";
 import "./Forms.css";
 
-const AudioNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
+const AudioNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
   const [caption, setCaption] = useState("");
-  const [author, setAuthor] = useState(defaultAuthor);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -33,10 +32,9 @@ const AudioNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
         type: "audio",
         audioBlob,
         caption: caption.trim(),
-        author: author.trim() || "Anonymous",
+        author: defaultAuthor || "Anonymous",
       });
       setCaption("");
-      setAuthor("");
       resetRecording();
     } catch (error) {
       console.error("Error creating audio note:", error);
@@ -153,17 +151,6 @@ const AudioNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Caption (optional)"
           maxLength={200}
-          className="form-input"
-        />
-      </div>
-
-      <div className="form-group">
-        <input
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          placeholder="Name (optional)"
-          maxLength={30}
           className="form-input"
         />
       </div>

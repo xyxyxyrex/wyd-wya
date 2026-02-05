@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { searchMusic } from "../../services/musicService";
 import "./Forms.css";
 
 const MAX_CHAR = 280;
@@ -11,6 +12,40 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
   const [isThreaded, setIsThreaded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
+
+  // Music state
+  const [selectedMusic, setSelectedMusic] = useState(null);
+  const [showMusicSearch, setShowMusicSearch] = useState(false);
+  const [musicQuery, setMusicQuery] = useState("");
+  const [musicResults, setMusicResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [playingPreview, setPlayingPreview] = useState(null);
+  const audioRef = useRef(null);
+
+  // Debounced music search
+  useEffect(() => {
+    if (!musicQuery.trim() || musicQuery.length < 2) {
+      setMusicResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      const results = await searchMusic(musicQuery);
+      setMusicResults(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [musicQuery]);
+
+  // Stop audio when closing music search
+  useEffect(() => {
+    if (!showMusicSearch && audioRef.current) {
+      audioRef.current.pause();
+      setPlayingPreview(null);
+    }
+  }, [showMusicSearch]);
 
   const handleThreadChange = (index, value) => {
     if (value.length <= MAX_CHAR) {
@@ -46,6 +81,34 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
     setIsThreaded(!isThreaded);
   };
 
+  const selectMusic = (track) => {
+    setSelectedMusic(track);
+    setShowMusicSearch(false);
+    setMusicQuery("");
+    setMusicResults([]);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setPlayingPreview(null);
+  };
+
+  const removeMusic = () => {
+    setSelectedMusic(null);
+  };
+
+  const togglePreview = (track) => {
+    if (playingPreview === track.id) {
+      audioRef.current?.pause();
+      setPlayingPreview(null);
+    } else {
+      if (audioRef.current) {
+        audioRef.current.src = track.previewUrl;
+        audioRef.current.play();
+        setPlayingPreview(track.id);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validThreads = threads.filter((t) => t.trim());
@@ -58,12 +121,23 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
         content: isThreaded ? validThreads : validThreads[0],
         isThreaded: isThreaded && validThreads.length > 1,
         author: author.trim() || "Anonymous",
+        music: selectedMusic
+          ? {
+              id: selectedMusic.id,
+              title: selectedMusic.title,
+              artist: selectedMusic.artist,
+              album: selectedMusic.album,
+              albumArt: selectedMusic.albumArt,
+              previewUrl: selectedMusic.previewUrl,
+            }
+          : null,
       });
       setThreads([""]);
       setAuthor("");
       setIsThreaded(false);
       setActiveThreadIndex(0);
       setShowModal(false);
+      setSelectedMusic(null);
     } catch (error) {
       console.error("Error creating note:", error);
     }
@@ -78,6 +152,8 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
 
   return (
     <>
+      <audio ref={audioRef} onEnded={() => setPlayingPreview(null)} />
+
       <form className="note-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <div className="textarea-trigger" onClick={openModal}>
@@ -92,6 +168,49 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
             </div>
           )}
         </div>
+
+        {/* Selected Music Preview */}
+        {selectedMusic && (
+          <div className="selected-music">
+            <img
+              src={selectedMusic.albumArt}
+              alt={selectedMusic.album}
+              className="music-art-small"
+            />
+            <div className="music-info-small">
+              <span className="music-title-small">{selectedMusic.title}</span>
+              <span className="music-artist-small">{selectedMusic.artist}</span>
+            </div>
+            <button
+              type="button"
+              className="remove-music-btn"
+              onClick={removeMusic}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Add Music Button */}
+        <button
+          type="button"
+          className="add-music-btn"
+          onClick={() => setShowMusicSearch(true)}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            width="16"
+            height="16"
+          >
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+          {selectedMusic ? "CHANGE MUSIC" : "ADD MUSIC"}
+        </button>
 
         <div className="form-row">
           <label className="toggle-label">
@@ -201,6 +320,94 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
               >
                 DONE
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Music Search Modal */}
+      {showMusicSearch && (
+        <div
+          className="text-modal-overlay"
+          onClick={() => setShowMusicSearch(false)}
+        >
+          <div
+            className="music-search-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h3>ADD MUSIC</h3>
+              <button
+                className="modal-close"
+                onClick={() => setShowMusicSearch(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="music-search-input-wrapper">
+              <svg
+                className="search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                type="text"
+                value={musicQuery}
+                onChange={(e) => setMusicQuery(e.target.value)}
+                placeholder="Search songs or artists..."
+                className="music-search-input"
+                autoFocus
+              />
+            </div>
+
+            <div className="music-results">
+              {isSearching && <div className="music-loading">Searching...</div>}
+
+              {!isSearching &&
+                musicResults.length === 0 &&
+                musicQuery.length >= 2 && (
+                  <div className="music-empty">No results found</div>
+                )}
+
+              {!isSearching && musicQuery.length < 2 && (
+                <div className="music-hint">Type to search for music</div>
+              )}
+
+              {musicResults.map((track) => (
+                <div key={track.id} className="music-result-item">
+                  <img
+                    src={track.albumArt}
+                    alt={track.album}
+                    className="music-result-art"
+                  />
+                  <div className="music-result-info">
+                    <span className="music-result-title">{track.title}</span>
+                    <span className="music-result-artist">{track.artist}</span>
+                  </div>
+                  {track.previewUrl && (
+                    <button
+                      type="button"
+                      className={`music-preview-btn ${playingPreview === track.id ? "playing" : ""}`}
+                      onClick={() => togglePreview(track)}
+                    >
+                      {playingPreview === track.id ? "■" : "▶"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="music-select-btn"
+                    onClick={() => selectMusic(track)}
+                  >
+                    +
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>

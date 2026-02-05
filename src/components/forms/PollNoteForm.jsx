@@ -1,10 +1,9 @@
 import { useState } from "react";
 import "./Forms.css";
 
-const PollNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
+const PollNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
-  const [author, setAuthor] = useState(defaultAuthor);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addOption = () => {
@@ -37,11 +36,10 @@ const PollNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
         type: "poll",
         question: question.trim(),
         options: validOptions,
-        author: author.trim() || "Anonymous",
+        author: defaultAuthor || "Anonymous",
       });
       setQuestion("");
       setOptions(["", ""]);
-      setAuthor("");
     } catch (error) {
       console.error("Error creating poll:", error);
     }
@@ -92,17 +90,6 @@ const PollNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
             Add option
           </button>
         )}
-      </div>
-
-      <div className="form-group">
-        <input
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          placeholder="Name (optional)"
-          maxLength={30}
-          className="form-input"
-        />
       </div>
 
       <button

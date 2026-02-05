@@ -129,6 +129,7 @@ function App() {
             noteData.author,
             location,
             noteData.isThreaded || false,
+            noteData.music || null,
           );
           addToast("POSTED", "success");
           break;
@@ -158,6 +159,13 @@ function App() {
       const postTime = Date.now();
       setLastPostTime(postTime);
       sessionStorage.setItem("lastPostTime", postTime.toString());
+
+      // Center map on the posted location
+      if (location) {
+        window.dispatchEvent(
+          new CustomEvent("center-on-user", { detail: location }),
+        );
+      }
 
       handleCloseCreate();
       setQuickText("");
