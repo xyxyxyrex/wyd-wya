@@ -50,6 +50,7 @@ const NoteCard = ({
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const [dominantColor, setDominantColor] = useState(null);
   const [textColor, setTextColor] = useState(null);
+  const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const musicAudioRef = useRef(null);
 
   const TEXT_LIMIT = 150;
@@ -385,7 +386,7 @@ const NoteCard = ({
 
   return (
     <div
-      className={`note-card note-${note.type} ${note.music ? "has-music" : ""}`}
+      className={`note-card note-${note.type} ${note.music ? "has-music" : ""} ${note.isSpoiler ? "is-spoiler" : ""}`}
     >
       {/* Expiration Progress Bar */}
       <div className="expiration-bar-container">
@@ -396,7 +397,10 @@ const NoteCard = ({
       </div>
 
       <div className="note-header">
-        <span className="note-type">{getTypeLabel()}</span>
+        <div className="note-header-left">
+          <span className="note-type">{getTypeLabel()}</span>
+          {note.isSpoiler && <span className="spoiler-badge">SPOILER</span>}
+        </div>
         <span className="note-meta">
           <span className="note-author">{note.author}</span>
           <span className="note-separator">·</span>
@@ -406,7 +410,35 @@ const NoteCard = ({
         </span>
       </div>
 
-      <div className="note-body">{renderContent()}</div>
+      {/* Spoiler Overlay */}
+      {note.isSpoiler && !spoilerRevealed && (
+        <div
+          className="spoiler-overlay"
+          onClick={() => setSpoilerRevealed(true)}
+        >
+          <div className="spoiler-warning">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              width="24"
+              height="24"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+            <span>Tap to reveal spoiler</span>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`note-body ${note.isSpoiler && !spoilerRevealed ? "blurred" : ""}`}
+      >
+        {renderContent()}
+      </div>
 
       {/* Music Section with Album Background */}
       {renderMusicSection()}

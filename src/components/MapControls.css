@@ -38,6 +38,15 @@
   color: var(--text-primary);
 }
 
+.control-btn.active {
+  background: #84cc16;
+  border-color: #84cc16;
+}
+
+.control-btn.active svg {
+  color: white;
+}
+
 /* Location pulse effect */
 .location-pulse {
   pointer-events: none;

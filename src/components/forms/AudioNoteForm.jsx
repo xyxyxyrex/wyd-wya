@@ -5,6 +5,7 @@ import "./Forms.css";
 const AudioNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
   const [caption, setCaption] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSpoiler, setIsSpoiler] = useState(false);
 
   const {
     isRecording,
@@ -33,8 +34,10 @@ const AudioNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
         audioBlob,
         caption: caption.trim(),
         author: defaultAuthor || "Anonymous",
+        isSpoiler,
       });
       setCaption("");
+      setIsSpoiler(false);
       resetRecording();
     } catch (error) {
       console.error("Error creating audio note:", error);
@@ -153,6 +156,19 @@ const AudioNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
           maxLength={200}
           className="form-input"
         />
+      </div>
+
+      <div className="form-row toggles-row">
+        <label className="toggle-label">
+          <input
+            type="checkbox"
+            checked={isSpoiler}
+            onChange={() => setIsSpoiler(!isSpoiler)}
+            className="toggle-input"
+          />
+          <span className="toggle-switch spoiler"></span>
+          <span className="toggle-text">SPOILER</span>
+        </label>
       </div>
 
       <button

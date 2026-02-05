@@ -5,6 +5,7 @@ const PollNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSpoiler, setIsSpoiler] = useState(false);
 
   const addOption = () => {
     if (options.length < 4) {
@@ -37,9 +38,11 @@ const PollNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
         question: question.trim(),
         options: validOptions,
         author: defaultAuthor || "Anonymous",
+        isSpoiler,
       });
       setQuestion("");
       setOptions(["", ""]);
+      setIsSpoiler(false);
     } catch (error) {
       console.error("Error creating poll:", error);
     }
@@ -90,6 +93,19 @@ const PollNoteForm = ({ onSubmit, defaultAuthor = "Anonymous" }) => {
             Add option
           </button>
         )}
+      </div>
+
+      <div className="form-row toggles-row">
+        <label className="toggle-label">
+          <input
+            type="checkbox"
+            checked={isSpoiler}
+            onChange={() => setIsSpoiler(!isSpoiler)}
+            className="toggle-input"
+          />
+          <span className="toggle-switch spoiler"></span>
+          <span className="toggle-text">SPOILER</span>
+        </label>
       </div>
 
       <button

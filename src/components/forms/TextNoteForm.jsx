@@ -10,6 +10,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
   const [author, setAuthor] = useState(defaultAuthor);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isThreaded, setIsThreaded] = useState(false);
+  const [isSpoiler, setIsSpoiler] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
 
@@ -121,6 +122,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
         content: isThreaded ? validThreads : validThreads[0],
         isThreaded: isThreaded && validThreads.length > 1,
         author: author.trim() || "Anonymous",
+        isSpoiler,
         music: selectedMusic
           ? {
               id: selectedMusic.id,
@@ -135,6 +137,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
       setThreads([""]);
       setAuthor("");
       setIsThreaded(false);
+      setIsSpoiler(false);
       setActiveThreadIndex(0);
       setShowModal(false);
       setSelectedMusic(null);
@@ -212,7 +215,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
           {selectedMusic ? "CHANGE MUSIC" : "ADD MUSIC"}
         </button>
 
-        <div className="form-row">
+        <div className="form-row toggles-row">
           <label className="toggle-label">
             <input
               type="checkbox"
@@ -221,7 +224,17 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
               className="toggle-input"
             />
             <span className="toggle-switch"></span>
-            <span className="toggle-text">THREADED POST</span>
+            <span className="toggle-text">THREAD</span>
+          </label>
+          <label className="toggle-label">
+            <input
+              type="checkbox"
+              checked={isSpoiler}
+              onChange={() => setIsSpoiler(!isSpoiler)}
+              className="toggle-input"
+            />
+            <span className="toggle-switch spoiler"></span>
+            <span className="toggle-text">SPOILER</span>
           </label>
         </div>
 

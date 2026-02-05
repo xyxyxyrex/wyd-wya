@@ -67,6 +67,10 @@ const CreateNote = ({ onCreate, defaultAuthor = "" }) => {
               />
             )}
           </div>
+
+          <p className="expiration-notice">
+            Posts are automatically deleted after 24 hours
+          </p>
         </div>
       )}
     </div>

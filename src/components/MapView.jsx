@@ -78,7 +78,13 @@ const clusterNotes = (notes, threshold = 0.0005) => {
   return clusters;
 };
 
-const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
+const MapView = ({
+  notes,
+  onNoteSelect,
+  onClusterSelect,
+  userLocation,
+  musicFilter,
+}) => {
   const mapContainerRef = useRef(null);
   const markersRef = useRef([]);
   const [mapReady, setMapReady] = useState(false);
@@ -136,8 +142,13 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
       const map = L.map(mapContainerRef.current, {
         attributionControl: false,
         zoomControl: false,
-        minZoom: 5,
+        minZoom: 3,
         maxZoom: 18,
+        maxBounds: [
+          [-85, -180],
+          [85, 180],
+        ],
+        maxBoundsViscosity: 1.0,
       }).setView(center, 13);
 
       // CartoDB Positron - clean, minimal light theme (original)
@@ -145,6 +156,11 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         {
           attribution: "",
+          noWrap: true,
+          bounds: [
+            [-85, -180],
+            [85, 180],
+          ],
         },
       ).addTo(map);
 
@@ -173,6 +189,17 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
       markersRef.current = [];
     };
   }, []);
+
+  // Center map on user location when it becomes available
+  useEffect(() => {
+    if (globalMapInstance && mapReady && userLocation) {
+      console.log("📍 Centering map on user location:", userLocation);
+      globalMapInstance.setView([userLocation.lat, userLocation.lng], 13, {
+        animate: true,
+        duration: 0.5,
+      });
+    }
+  }, [userLocation, mapReady]);
 
   useEffect(() => {
     console.log("🔄 Marker effect check:", {
@@ -214,6 +241,17 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
     // Group notes into clusters
     const clusters = clusterNotes(notesWithLocation);
 
+    // Helper to check if a note matches the music filter
+    const noteMatchesMusicFilter = (note) => {
+      if (!musicFilter) return true;
+      if (!note.music) return false;
+      return (
+        note.music.id === musicFilter.id ||
+        (note.music.title === musicFilter.title &&
+          note.music.artist === musicFilter.artist)
+      );
+    };
+
     clusters.forEach((cluster) => {
       if (cluster.notes.length === 1) {
         // Single note - show colored solid marker with progress ring
@@ -222,9 +260,13 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
         const progress = getExpirationProgress(note.createdAt, note.expiresAt);
         const progressRing = getProgressRing(progress, color, 44);
 
+        // Calculate opacity based on music filter
+        const matchesFilter = noteMatchesMusicFilter(note);
+        const opacity = musicFilter ? (matchesFilter ? 1 : 0.25) : 1;
+
         const noteIcon = L.divIcon({
           className: "note-marker",
-          html: `<div class="note-pin-wrapper">
+          html: `<div class="note-pin-wrapper" style="opacity: ${opacity}; transition: opacity 0.3s ease;">
             ${progressRing}
             <div class="note-pin" data-color="${note.color}" style="background: ${color}">
               ${icons[note.type] || icons.text}
@@ -236,7 +278,7 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
 
         const marker = L.marker([note.location.lat, note.location.lng], {
           icon: noteIcon,
-          zIndexOffset: 500,
+          zIndexOffset: matchesFilter ? 600 : 500,
         }).addTo(map);
 
         // Create popup content based on note type
@@ -310,10 +352,17 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
         const dominantColor =
           NOTE_COLORS[cluster.notes[0].color] || NOTE_COLORS.teal;
 
+        // Check if any note in cluster matches the music filter
+        const hasMatchingNote = cluster.notes.some(noteMatchesMusicFilter);
+        const matchingCount = musicFilter
+          ? cluster.notes.filter(noteMatchesMusicFilter).length
+          : cluster.notes.length;
+        const clusterOpacity = musicFilter ? (hasMatchingNote ? 1 : 0.25) : 1;
+
         const clusterIcon = L.divIcon({
           className: "cluster-marker",
-          html: `<div class="cluster-pin-wrapper">
-            <span class="cluster-count-above">${cluster.notes.length}</span>
+          html: `<div class="cluster-pin-wrapper" style="opacity: ${clusterOpacity}; transition: opacity 0.3s ease;">
+            <span class="cluster-count-above">${musicFilter && hasMatchingNote ? matchingCount : cluster.notes.length}</span>
             <div class="cluster-pin" style="background: ${dominantColor}">
               <div class="cluster-inner-ring"></div>
             </div>
@@ -324,7 +373,7 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
 
         const marker = L.marker([cluster.center.lat, cluster.center.lng], {
           icon: clusterIcon,
-          zIndexOffset: 600,
+          zIndexOffset: hasMatchingNote ? 700 : 600,
         }).addTo(map);
 
         marker.on("click", () => {
@@ -335,7 +384,14 @@ const MapView = ({ notes, onNoteSelect, onClusterSelect, userLocation }) => {
         markersRef.current.push(marker);
       }
     });
-  }, [notes, userLocation, mapReady, onNoteSelect, onClusterSelect]);
+  }, [
+    notes,
+    userLocation,
+    mapReady,
+    onNoteSelect,
+    onClusterSelect,
+    musicFilter,
+  ]);
 
   // Listen for center-on-user event
   useEffect(() => {

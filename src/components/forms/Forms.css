@@ -381,6 +381,11 @@
   align-items: center;
 }
 
+.form-row.toggles-row {
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .toggle-label {
   display: flex;
   align-items: center;
@@ -416,6 +421,10 @@
 
 .toggle-input:checked + .toggle-switch {
   background: var(--text-primary);
+}
+
+.toggle-input:checked + .toggle-switch.spoiler {
+  background: #14b8a6;
 }
 
 .toggle-input:checked + .toggle-switch::after {

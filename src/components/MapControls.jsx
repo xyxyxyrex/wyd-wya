@@ -1,7 +1,12 @@
 import { useTheme } from "../context/ThemeContext";
 import "./MapControls.css";
 
-const MapControls = ({ userLocation, onCenterUser }) => {
+const MapControls = ({
+  userLocation,
+  onCenterUser,
+  onOpenMusicFilter,
+  hasMusicFilter,
+}) => {
   const { isDarkMode, toggleTheme } = useTheme();
 
   const handleZoomIn = () => {
@@ -32,6 +37,23 @@ const MapControls = ({ userLocation, onCenterUser }) => {
           </svg>
         </button>
       )}
+
+      {/* Music Filter button */}
+      <button
+        className={`control-btn ${hasMusicFilter ? "active" : ""}`}
+        onClick={onOpenMusicFilter}
+        title="Filter by music"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      </button>
 
       {/* Theme toggle */}
       <button

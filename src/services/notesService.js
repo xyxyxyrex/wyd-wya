@@ -60,12 +60,14 @@ export const createTextNote = async (
   location = null,
   isThreaded = false,
   music = null,
+  isSpoiler = false,
 ) => {
   const now = Timestamp.now();
   const noteData = {
     type: "text",
     content, // Can be string or array of strings for threads
     isThreaded: isThreaded,
+    isSpoiler: isSpoiler,
     author,
     location,
     comments: [],
@@ -89,6 +91,7 @@ export const createPollNote = async (
   options,
   author = "Anonymous",
   location = null,
+  isSpoiler = false,
 ) => {
   const pollOptions = options.map((opt) => ({
     text: opt,
@@ -103,6 +106,7 @@ export const createPollNote = async (
     options: pollOptions,
     author,
     location,
+    isSpoiler: isSpoiler,
     comments: [],
     color: getRandomColor(),
     createdAt: now,
@@ -119,6 +123,7 @@ export const createAudioNote = async (
   caption = "",
   author = "Anonymous",
   location = null,
+  isSpoiler = false,
 ) => {
   // Convert audio blob to base64
   const base64Audio = await new Promise((resolve, reject) => {
@@ -135,6 +140,7 @@ export const createAudioNote = async (
     caption,
     author,
     location,
+    isSpoiler: isSpoiler,
     comments: [],
     color: getRandomColor(),
     createdAt: now,
