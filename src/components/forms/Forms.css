@@ -544,6 +544,37 @@
   gap: 0.5rem;
 }
 
+.text-style-toggles {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.style-toggle-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.style-toggle-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.style-toggle-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
 .modal-textarea {
   width: 100%;
   min-height: 200px;
@@ -561,6 +592,15 @@
 .modal-textarea:focus {
   outline: none;
   border-color: var(--text-primary);
+}
+
+.modal-textarea.quote-style {
+  font-family: "Noto Serif", Georgia, serif;
+  font-style: italic;
+}
+
+.modal-textarea.bold-style {
+  font-weight: 700;
 }
 
 .modal-textarea::placeholder {

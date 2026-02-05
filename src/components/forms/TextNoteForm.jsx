@@ -11,6 +11,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isThreaded, setIsThreaded] = useState(false);
   const [isSpoiler, setIsSpoiler] = useState(false);
+  const [textStyle, setTextStyle] = useState(null); // null, 'quote', or 'bold'
   const [showModal, setShowModal] = useState(false);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
 
@@ -123,6 +124,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
         isThreaded: isThreaded && validThreads.length > 1,
         author: author.trim() || "Anonymous",
         isSpoiler,
+        textStyle,
         music: selectedMusic
           ? {
               id: selectedMusic.id,
@@ -138,6 +140,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
       setAuthor("");
       setIsThreaded(false);
       setIsSpoiler(false);
+      setTextStyle(null);
       setActiveThreadIndex(0);
       setShowModal(false);
       setSelectedMusic(null);
@@ -293,6 +296,42 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
             )}
 
             <div className="modal-body">
+              <div className="text-style-toggles">
+                <button
+                  type="button"
+                  className={`style-toggle-btn ${textStyle === "quote" ? "active" : ""}`}
+                  onClick={() =>
+                    setTextStyle(textStyle === "quote" ? null : "quote")
+                  }
+                  title="Quote style"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="18"
+                    height="18"
+                  >
+                    <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className={`style-toggle-btn ${textStyle === "bold" ? "active" : ""}`}
+                  onClick={() =>
+                    setTextStyle(textStyle === "bold" ? null : "bold")
+                  }
+                  title="Bold style"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="18"
+                    height="18"
+                  >
+                    <path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z" />
+                  </svg>
+                </button>
+              </div>
               <textarea
                 value={threads[activeThreadIndex]}
                 onChange={(e) =>
@@ -303,7 +342,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
                     ? `Thread ${activeThreadIndex + 1}...`
                     : "Write something..."
                 }
-                className="modal-textarea"
+                className={`modal-textarea ${textStyle === "quote" ? "quote-style" : ""} ${textStyle === "bold" ? "bold-style" : ""}`}
                 autoFocus
               />
               <div className="modal-footer-row">

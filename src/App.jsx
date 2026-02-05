@@ -195,6 +195,7 @@ function App() {
             noteData.isThreaded || false,
             noteData.music || null,
             noteData.isSpoiler || false,
+            noteData.textStyle || null,
           );
           addToast("POSTED", "success");
           break;

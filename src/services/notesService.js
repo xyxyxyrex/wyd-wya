@@ -61,6 +61,7 @@ export const createTextNote = async (
   isThreaded = false,
   music = null,
   isSpoiler = false,
+  textStyle = null,
 ) => {
   const now = Timestamp.now();
   const noteData = {
@@ -68,6 +69,7 @@ export const createTextNote = async (
     content, // Can be string or array of strings for threads
     isThreaded: isThreaded,
     isSpoiler: isSpoiler,
+    textStyle: textStyle,
     author,
     location,
     comments: [],

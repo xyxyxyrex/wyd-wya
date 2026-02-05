@@ -216,10 +216,18 @@ const NoteCard = ({
         // For threaded posts, use a different layout
         if (hasMultipleThreads) {
           const textSizeClass = getTextSizeClass(currentText);
+          const bubbleClasses = [
+            "text-bubble",
+            note.textStyle === "quote" ? "quote-style" : "",
+            note.textStyle === "bold" ? "bold-style" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+
           return (
             <div className="text-content-wrapper has-threads">
               <div
-                className="text-bubble"
+                className={bubbleClasses}
                 style={
                   dominantColor && note.music
                     ? {
@@ -232,7 +240,17 @@ const NoteCard = ({
                     : undefined
                 }
               >
-                <p className={`note-text ${textSizeClass}`}>{currentText}</p>
+                {note.textStyle === "quote" ? (
+                  <div className="quote-marks">
+                    <span className="quote-mark start">"</span>
+                    <p className={`note-text ${textSizeClass}`}>
+                      {currentText}
+                    </p>
+                    <span className="quote-mark end">"</span>
+                  </div>
+                ) : (
+                  <p className={`note-text ${textSizeClass}`}>{currentText}</p>
+                )}
               </div>
               <div className="thread-nav-row">
                 <button className="thread-nav prev" onClick={goToPrevThread}>
@@ -274,10 +292,18 @@ const NoteCard = ({
 
         // Regular single text post
         const textSizeClass = getTextSizeClass(displayText);
+        const bubbleClasses = [
+          "text-bubble",
+          note.textStyle === "quote" ? "quote-style" : "",
+          note.textStyle === "bold" ? "bold-style" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
         return (
           <div className="text-content-wrapper">
             <div
-              className="text-bubble"
+              className={bubbleClasses}
               style={
                 dominantColor && note.music
                   ? {
@@ -287,31 +313,63 @@ const NoteCard = ({
                   : undefined
               }
             >
-              <p className={`note-text ${textSizeClass}`}>
-                {displayText}
-                {shouldTruncate && (
-                  <button
-                    className="see-more-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(true);
-                    }}
-                  >
-                    see more
-                  </button>
-                )}
-                {isExpanded && currentText.length > TEXT_LIMIT && (
-                  <button
-                    className="see-more-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(false);
-                    }}
-                  >
-                    see less
-                  </button>
-                )}
-              </p>
+              {note.textStyle === "quote" ? (
+                <div className="quote-marks">
+                  <span className="quote-mark start">"</span>
+                  <p className={`note-text ${textSizeClass}`}>
+                    {displayText}
+                    {shouldTruncate && (
+                      <button
+                        className="see-more-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsExpanded(true);
+                        }}
+                      >
+                        see more
+                      </button>
+                    )}
+                    {isExpanded && currentText.length > TEXT_LIMIT && (
+                      <button
+                        className="see-more-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsExpanded(false);
+                        }}
+                      >
+                        see less
+                      </button>
+                    )}
+                  </p>
+                  <span className="quote-mark end">"</span>
+                </div>
+              ) : (
+                <p className={`note-text ${textSizeClass}`}>
+                  {displayText}
+                  {shouldTruncate && (
+                    <button
+                      className="see-more-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(true);
+                      }}
+                    >
+                      see more
+                    </button>
+                  )}
+                  {isExpanded && currentText.length > TEXT_LIMIT && (
+                    <button
+                      className="see-more-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(false);
+                      }}
+                    >
+                      see less
+                    </button>
+                  )}
+                </p>
+              )}
             </div>
           </div>
         );
