@@ -528,21 +528,11 @@ body {
 }
 
 .cluster-note-icon.audio {
-  background: var(--text-primary);
-  border-color: var(--text-primary);
-}
-
-.cluster-note-icon.audio svg {
-  color: var(--bg-color);
+  background: var(--bg-secondary);
 }
 
 .cluster-note-icon.thread {
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
-  border-color: #8b5cf6;
-}
-
-.cluster-note-icon.thread svg {
-  color: white;
+  background: var(--bg-secondary);
 }
 
 .cluster-note-info {
