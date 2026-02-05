@@ -1,46 +1,7 @@
-// iTunes Search API service using JSONP for iOS compatibility
+// iTunes Search API service with CORS proxy for iOS compatibility
 
 const ITUNES_API = "https://itunes.apple.com/search";
-
-// JSONP helper for cross-origin requests (required for iOS Safari)
-const fetchJSONP = (url) => {
-  return new Promise((resolve, reject) => {
-    const callbackName = `jsonp_callback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const script = document.createElement("script");
-
-    // Cleanup function
-    const cleanup = () => {
-      delete window[callbackName];
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
-
-    // Set timeout for the request
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error("JSONP request timeout"));
-    }, 10000);
-
-    // Define the callback
-    window[callbackName] = (data) => {
-      clearTimeout(timeout);
-      cleanup();
-      resolve(data);
-    };
-
-    // Handle script errors
-    script.onerror = () => {
-      clearTimeout(timeout);
-      cleanup();
-      reject(new Error("JSONP request failed"));
-    };
-
-    // Add callback parameter and load script
-    script.src = `${url}&callback=${callbackName}`;
-    document.head.appendChild(script);
-  });
-};
+const CORS_PROXY = "https://corsproxy.io/?";
 
 export const searchMusic = async (query, limit = 10) => {
   if (!query || query.trim().length < 2) return [];
@@ -53,8 +14,19 @@ export const searchMusic = async (query, limit = 10) => {
       limit: limit.toString(),
     });
 
-    // Use JSONP for iOS Safari compatibility
-    const data = await fetchJSONP(`${ITUNES_API}?${params}`);
+    const targetUrl = `${ITUNES_API}?${params}`;
+
+    // Try direct fetch first, fall back to CORS proxy for iOS
+    let response;
+    try {
+      response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Direct fetch failed");
+    } catch {
+      // Use CORS proxy as fallback (needed for iOS Safari)
+      response = await fetch(`${CORS_PROXY}${encodeURIComponent(targetUrl)}`);
+    }
+
+    const data = await response.json();
 
     return data.results.map((track) => ({
       id: track.trackId,
