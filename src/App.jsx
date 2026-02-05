@@ -423,8 +423,6 @@ function App() {
             <MapControls
               userLocation={userLocation}
               onCenterUser={handleCenterOnUser}
-              onOpenMusicFilter={() => setShowMusicFilter(true)}
-              hasMusicFilter={!!musicFilter}
             />
           </div>
 
@@ -619,52 +617,69 @@ function App() {
           )}
 
           {/* Floating Bottom Bar */}
-          <div className="floating-bar">
-            <div className="floating-bar-container">
-              <button
-                type="button"
-                className="quick-text-trigger"
-                onClick={() => handleOpenCreate("text")}
-              >
-                <span>you ok?</span>
-                <span className="trigger-icon">↗</span>
-              </button>
-              <div className="bar-divider" />
-              <button
-                className="type-btn"
-                onClick={() => handleOpenCreate("poll")}
-                data-type="poll"
-                title="Poll"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+          <div className="floating-bar-wrapper">
+            <div className="floating-bar">
+              <div className="floating-bar-container">
+                <button
+                  type="button"
+                  className="quick-text-trigger"
+                  onClick={() => handleOpenCreate("text")}
                 >
-                  <rect x="4" y="4" width="4" height="16" rx="1" />
-                  <rect x="10" y="8" width="4" height="12" rx="1" />
-                  <rect x="16" y="2" width="4" height="18" rx="1" />
-                </svg>
-              </button>
-              <button
-                className="type-btn"
-                onClick={() => handleOpenCreate("audio")}
-                data-type="audio"
-                title="Audio clip"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+                  <span>you ok?</span>
+                  <span className="trigger-icon">↗</span>
+                </button>
+                <div className="bar-divider" />
+                <button
+                  className="type-btn"
+                  onClick={() => handleOpenCreate("poll")}
+                  data-type="poll"
+                  title="Poll"
                 >
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" y1="19" x2="12" y2="22" />
-                </svg>
-              </button>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect x="4" y="4" width="4" height="16" rx="1" />
+                    <rect x="10" y="8" width="4" height="12" rx="1" />
+                    <rect x="16" y="2" width="4" height="18" rx="1" />
+                  </svg>
+                </button>
+                <button
+                  className="type-btn"
+                  onClick={() => handleOpenCreate("audio")}
+                  data-type="audio"
+                  title="Audio clip"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
+                  </svg>
+                </button>
+              </div>
             </div>
+            <button
+              className={`music-filter-btn ${musicFilter ? "active" : ""}`}
+              onClick={() => setShowMusicFilter(true)}
+              title="Filter by music"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
           </div>
 
           {/* Music Filter Modal */}
