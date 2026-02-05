@@ -1,7 +1,6 @@
 // iTunes Search API service with CORS proxy for iOS compatibility
 
 const ITUNES_API = "https://itunes.apple.com/search";
-const CORS_PROXY = "https://corsproxy.io/?";
 
 export const searchMusic = async (query, limit = 10) => {
   if (!query || query.trim().length < 2) return [];
@@ -16,17 +15,19 @@ export const searchMusic = async (query, limit = 10) => {
 
     const targetUrl = `${ITUNES_API}?${params}`;
 
-    // Try direct fetch first, fall back to CORS proxy for iOS
-    let response;
+    // Try direct fetch first
+    let data;
     try {
-      response = await fetch(targetUrl);
+      const response = await fetch(targetUrl);
       if (!response.ok) throw new Error("Direct fetch failed");
+      data = await response.json();
     } catch {
-      // Use CORS proxy as fallback (needed for iOS Safari)
-      response = await fetch(`${CORS_PROXY}${encodeURIComponent(targetUrl)}`);
+      // Use allorigins proxy as fallback (needed for iOS Safari)
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+      const response = await fetch(proxyUrl);
+      if (!response.ok) throw new Error("Proxy fetch failed");
+      data = await response.json();
     }
-
-    const data = await response.json();
 
     return data.results.map((track) => ({
       id: track.trackId,
