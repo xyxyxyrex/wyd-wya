@@ -1,0 +1,46 @@
+.notes-feed {
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-feed.loading,
+.notes-feed.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--text-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notes-feed.empty h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.notes-feed.empty p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.notes-feed.loading p {
+  font-size: 0.8rem;
+}
