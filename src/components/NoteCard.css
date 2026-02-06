@@ -401,6 +401,47 @@
   padding-top: 0.625rem;
   margin-top: 0.625rem;
   border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pulse-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.pulse-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.pulse-btn.pulsed {
+  color: #ef4444;
+}
+
+.pulse-btn.pulsed:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.pulse-count {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .comment-toggle {

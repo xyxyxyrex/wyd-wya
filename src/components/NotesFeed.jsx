@@ -1,7 +1,14 @@
 import NoteCard from "./NoteCard";
 import "./NotesFeed.css";
 
-const NotesFeed = ({ notes, loading, onVote, onComment, selectedNote }) => {
+const NotesFeed = ({
+  notes,
+  loading,
+  onVote,
+  onComment,
+  onPulse,
+  selectedNote,
+}) => {
   if (loading) {
     return (
       <div className="notes-feed loading">
@@ -28,6 +35,7 @@ const NotesFeed = ({ notes, loading, onVote, onComment, selectedNote }) => {
           note={note}
           onVote={onVote}
           onComment={onComment}
+          onPulse={onPulse}
           isSelected={selectedNote?.id === note.id}
         />
       ))}

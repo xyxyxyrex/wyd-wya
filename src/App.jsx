@@ -17,6 +17,7 @@ import {
   createAudioNote,
   votePoll,
   addComment,
+  pulseNote,
 } from "./services/notesService";
 import "./App.css";
 
@@ -265,6 +266,19 @@ function App() {
     } catch (error) {
       console.error("Error adding comment:", error);
       addToast("FAILED TO ADD COMMENT", "error");
+    }
+  };
+
+  const handlePulse = async (noteId) => {
+    try {
+      const userId =
+        localStorage.getItem("san-ka-voter-id") ||
+        `voter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem("san-ka-voter-id", userId);
+
+      await pulseNote(noteId, userId);
+    } catch (error) {
+      console.error("Error pulsing:", error);
     }
   };
 
@@ -565,6 +579,7 @@ function App() {
                   note={selectedNote}
                   onVote={handleVote}
                   onComment={handleComment}
+                  onPulse={handlePulse}
                   isSelected={true}
                   showComments={true}
                 />

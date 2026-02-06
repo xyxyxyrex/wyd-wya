@@ -73,6 +73,8 @@ export const createTextNote = async (
     author,
     location,
     comments: [],
+    pulses: 0,
+    pulsedBy: [],
     color: getRandomColor(),
     createdAt: now,
     expiresAt: Timestamp.fromMillis(now.toMillis() + EXPIRATION_MS),
@@ -110,6 +112,8 @@ export const createPollNote = async (
     location,
     isSpoiler: isSpoiler,
     comments: [],
+    pulses: 0,
+    pulsedBy: [],
     color: getRandomColor(),
     createdAt: now,
     expiresAt: Timestamp.fromMillis(now.toMillis() + EXPIRATION_MS),
@@ -144,6 +148,8 @@ export const createAudioNote = async (
     location,
     isSpoiler: isSpoiler,
     comments: [],
+    pulses: 0,
+    pulsedBy: [],
     color: getRandomColor(),
     createdAt: now,
     expiresAt: Timestamp.fromMillis(now.toMillis() + EXPIRATION_MS),
@@ -178,6 +184,38 @@ export const votePoll = async (noteId, optionIndex, voterId) => {
   ];
 
   await updateDoc(noteRef, { options });
+};
+
+// Pulse a note (like/heart)
+export const pulseNote = async (noteId, userId) => {
+  const noteRef = doc(db, NOTES_COLLECTION, noteId);
+
+  // Get current note data
+  const notesSnapshot = await getDocs(query(collection(db, NOTES_COLLECTION)));
+  const noteDoc = notesSnapshot.docs.find((d) => d.id === noteId);
+
+  if (!noteDoc) throw new Error("Note not found");
+
+  const noteData = noteDoc.data();
+  const pulsedBy = noteData.pulsedBy || [];
+  const currentPulses = noteData.pulses || 0;
+
+  // Check if user already pulsed - toggle off
+  if (pulsedBy.includes(userId)) {
+    const newPulsedBy = pulsedBy.filter((id) => id !== userId);
+    await updateDoc(noteRef, {
+      pulses: Math.max(0, currentPulses - 1),
+      pulsedBy: newPulsedBy,
+    });
+    return false; // Unpulsed
+  }
+
+  // Add pulse
+  await updateDoc(noteRef, {
+    pulses: currentPulses + 1,
+    pulsedBy: [...pulsedBy, userId],
+  });
+  return true; // Pulsed
 };
 
 // Add comment to note

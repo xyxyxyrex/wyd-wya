@@ -28,9 +28,14 @@ const NoteCard = ({
   note,
   onVote,
   onComment,
+  onPulse,
   showComments: initialShowComments = false,
 }) => {
   const [showComments, setShowComments] = useState(initialShowComments);
+  const [hasPulsed, setHasPulsed] = useState(() => {
+    const userId = localStorage.getItem("san-ka-voter-id");
+    return note.pulsedBy?.includes(userId) || false;
+  });
   const [votedOption, setVotedOption] = useState(() => {
     // Check if user already voted on this poll
     if (note.type === "poll") {
@@ -94,6 +99,14 @@ const NoteCard = ({
       }
     }
   }, [note.type, note.options]);
+
+  // Update hasPulsed when note data changes (real-time updates)
+  useEffect(() => {
+    const userId = localStorage.getItem("san-ka-voter-id");
+    if (userId) {
+      setHasPulsed(note.pulsedBy?.includes(userId) || false);
+    }
+  }, [note.pulsedBy]);
 
   useEffect(() => {
     setShowComments(initialShowComments);
@@ -502,6 +515,35 @@ const NoteCard = ({
       {renderMusicSection()}
 
       <div className="note-footer">
+        <div className="footer-left">
+          <button
+            className={`pulse-btn ${hasPulsed ? "pulsed" : ""}`}
+            onClick={() => {
+              setHasPulsed(!hasPulsed);
+              onPulse?.(note.id);
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill={hasPulsed ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+              width="16"
+              height="16"
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </button>
+          {(note.pulses > 0 || hasPulsed) && (
+            <span className="pulse-count">
+              {note.pulses || (hasPulsed ? 1 : 0)}{" "}
+              {(note.pulses || (hasPulsed ? 1 : 0)) === 1
+                ? "person has"
+                : "people have"}{" "}
+              heard this tone
+            </span>
+          )}
+        </div>
         <button
           className="comment-toggle"
           onClick={() => setShowComments(!showComments)}
