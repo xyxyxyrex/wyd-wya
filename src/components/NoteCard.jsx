@@ -53,10 +53,14 @@ const NoteCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [expirationProgress, setExpirationProgress] = useState(1);
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const [dominantColor, setDominantColor] = useState(null);
   const [textColor, setTextColor] = useState(null);
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const musicAudioRef = useRef(null);
+  const noteAudioRef = useRef(null);
 
   const TEXT_LIMIT = 150;
 
@@ -427,10 +431,74 @@ const NoteCard = ({
         return (
           <div className="audio-content">
             {note.caption && <p className="audio-caption">{note.caption}</p>}
-            <audio controls className="audio-player">
-              <source src={note.audioData || note.audioUrl} type="audio/wav" />
-              Your browser does not support audio playback.
-            </audio>
+            <audio
+              ref={noteAudioRef}
+              src={note.audioData || note.audioUrl}
+              onLoadedMetadata={(e) => setAudioDuration(e.target.duration)}
+              onTimeUpdate={(e) => setAudioCurrentTime(e.target.currentTime)}
+              onEnded={() => setIsPlayingAudio(false)}
+              onPlay={() => setIsPlayingAudio(true)}
+              onPause={() => setIsPlayingAudio(false)}
+            />
+            <div className="custom-audio-player">
+              <button
+                className="audio-play-btn"
+                onClick={() => {
+                  if (noteAudioRef.current) {
+                    if (isPlayingAudio) {
+                      noteAudioRef.current.pause();
+                    } else {
+                      noteAudioRef.current.play();
+                    }
+                  }
+                }}
+              >
+                {isPlayingAudio ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="20"
+                    height="20"
+                  >
+                    <rect x="6" y="4" width="4" height="16" rx="1" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="20"
+                    height="20"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
+              <div className="audio-visualizer">
+                <div className={`soundwave ${isPlayingAudio ? "playing" : ""}`}>
+                  {[...Array(20)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="soundwave-bar"
+                      style={{ animationDelay: `${i * 0.05}s` }}
+                    />
+                  ))}
+                </div>
+                <div
+                  className="audio-progress"
+                  style={{
+                    width: `${audioDuration ? (audioCurrentTime / audioDuration) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              <span className="audio-time">
+                {Math.floor(audioCurrentTime / 60)}:
+                {String(Math.floor(audioCurrentTime % 60)).padStart(2, "0")}
+                {" / "}
+                {Math.floor(audioDuration / 60)}:
+                {String(Math.floor(audioDuration % 60)).padStart(2, "0")}
+              </span>
+            </div>
           </div>
         );
 

@@ -41,6 +41,7 @@
   --glass-blur: blur(20px);
   --glass-bg: rgba(17, 17, 17, 0.7);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --teal-primary: #33ffad;
 }
 
 /* Global styles */
@@ -965,6 +966,70 @@ body {
   font-size: 0.7rem;
   color: var(--text-tertiary);
   letter-spacing: 0.02em;
+}
+
+.location-precision-section {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.location-precision-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.location-precision-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.precision-option {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.precision-option:hover {
+  border-color: var(--text-secondary);
+}
+
+.precision-option.selected {
+  border-color: var(--accent-color);
+  background: rgba(20, 184, 166, 0.08);
+}
+
+.precision-option input[type="radio"] {
+  margin: 0;
+  margin-top: 2px;
+  accent-color: var(--teal-primary);
+}
+
+.precision-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.precision-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.precision-desc {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
 }
 
 .welcome-btn {

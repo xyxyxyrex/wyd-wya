@@ -59,6 +59,9 @@ function App() {
     () => !sessionStorage.getItem("username"),
   );
   const [tempName, setTempName] = useState("");
+  const [locationPrecision, setLocationPrecision] = useState(
+    () => localStorage.getItem("san-ka-location-precision") || "approximate",
+  );
   const [isClosingNote, setIsClosingNote] = useState(false);
   const [isClosingCreate, setIsClosingCreate] = useState(false);
   const [isClosingCluster, setIsClosingCluster] = useState(false);
@@ -73,10 +76,43 @@ function App() {
   // Spam prevention: minimum 30 seconds between posts
   const SPAM_COOLDOWN_MS = 30000;
 
+  // Fuzzy location helper - adds random offset of 100-500m
+  const fuzzyLocation = (loc) => {
+    if (!loc) return null;
+    // Random distance between 100-500 meters
+    const distance = 100 + Math.random() * 400;
+    // Random direction (0-360 degrees)
+    const bearing = Math.random() * 360;
+
+    // Earth's radius in meters
+    const R = 6378137;
+    const lat1 = (loc.lat * Math.PI) / 180;
+    const lng1 = (loc.lng * Math.PI) / 180;
+    const bearingRad = (bearing * Math.PI) / 180;
+
+    // Calculate new position
+    const lat2 = Math.asin(
+      Math.sin(lat1) * Math.cos(distance / R) +
+        Math.cos(lat1) * Math.sin(distance / R) * Math.cos(bearingRad),
+    );
+    const lng2 =
+      lng1 +
+      Math.atan2(
+        Math.sin(bearingRad) * Math.sin(distance / R) * Math.cos(lat1),
+        Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2),
+      );
+
+    return {
+      lat: (lat2 * 180) / Math.PI,
+      lng: (lng2 * 180) / Math.PI,
+    };
+  };
+
   const handleWelcomeSubmit = (e) => {
     e.preventDefault();
     const name = tempName.trim() || "Anonymous";
     sessionStorage.setItem("username", name);
+    localStorage.setItem("san-ka-location-precision", locationPrecision);
     setUsername(name);
     setShowWelcome(false);
   };
@@ -184,8 +220,16 @@ function App() {
 
     setIsPosting(true);
     try {
-      const location = userLocation || null;
-      console.log("📤 Creating note with location:", location);
+      // Apply location fuzzing if approximate precision is selected
+      const location =
+        locationPrecision === "approximate"
+          ? fuzzyLocation(userLocation)
+          : userLocation || null;
+      console.log(
+        "📤 Creating note with location:",
+        location,
+        `(${locationPrecision})`,
+      );
 
       switch (noteData.type) {
         case "text":
@@ -397,6 +441,47 @@ function App() {
                 autoFocus
               />
               <p className="welcome-hint">Please do not enter your real name</p>
+
+              <div className="location-precision-section">
+                <span className="location-precision-label">
+                  LOCATION SHARING
+                </span>
+                <div className="location-precision-options">
+                  <label
+                    className={`precision-option ${locationPrecision === "approximate" ? "selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="locationPrecision"
+                      value="approximate"
+                      checked={locationPrecision === "approximate"}
+                      onChange={(e) => setLocationPrecision(e.target.value)}
+                    />
+                    <div className="precision-content">
+                      <span className="precision-title">Approximate</span>
+                      <span className="precision-desc">
+                        ~100-500m offset (safer)
+                      </span>
+                    </div>
+                  </label>
+                  <label
+                    className={`precision-option ${locationPrecision === "precise" ? "selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="locationPrecision"
+                      value="precise"
+                      checked={locationPrecision === "precise"}
+                      onChange={(e) => setLocationPrecision(e.target.value)}
+                    />
+                    <div className="precision-content">
+                      <span className="precision-title">Precise</span>
+                      <span className="precision-desc">Exact location</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               <button type="submit" className="welcome-btn">
                 →
               </button>
