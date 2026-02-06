@@ -164,7 +164,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
         <div className="form-group">
           <div className="textarea-trigger" onClick={openModal}>
             <span className="trigger-placeholder">
-              {currentContent || "Write something..."}
+              {currentContent || "What's your tone?"}
             </span>
             <span className="trigger-expand">↗</span>
           </div>
@@ -340,7 +340,7 @@ const TextNoteForm = ({ onSubmit, defaultAuthor = "" }) => {
                 placeholder={
                   isThreaded
                     ? `Thread ${activeThreadIndex + 1}...`
-                    : "Write something..."
+                    : "You're here. That's enough. Write your threaded tone and share it with the world!"
                 }
                 className={`modal-textarea ${textStyle === "quote" ? "quote-style" : ""} ${textStyle === "bold" ? "bold-style" : ""}`}
                 autoFocus

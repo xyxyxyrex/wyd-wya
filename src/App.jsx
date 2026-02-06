@@ -433,7 +433,7 @@ function App() {
               className={`cluster-panel ${isClosingCluster ? "closing" : ""}`}
             >
               <div className="cluster-panel-header">
-                <h3>{clusteredNotes.length} notes here</h3>
+                <h3>{clusteredNotes.length} tones here</h3>
                 <button className="close-btn" onClick={handleCloseCluster}>
                   x
                 </button>
@@ -587,7 +587,7 @@ function App() {
                 </button>
                 <h3 className="modal-title">
                   {showCreateNote === "text"
-                    ? "New Post"
+                    ? "New Tone"
                     : showCreateNote === "poll"
                       ? "Create Poll"
                       : "Record Audio"}
